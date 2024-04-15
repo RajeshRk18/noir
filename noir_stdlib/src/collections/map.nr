@@ -52,7 +52,10 @@ impl<K, V, N> Map<K, V, N> {
         Self { entries, size, is_empty, small_index, big_index }
     }
 
-    unconstrained fn find_relative_key_location(self, key: K) -> (Option<u32>, Option<u32>, bool, bool, bool)
+    unconstrained fn find_relative_key_location(
+        self,
+        key: K
+    ) -> (Option<u32>, Option<u32>, bool, bool, bool)
     where K: Eq + Ord {
         let mut previous_index = Option::none();
         let mut next_index = Option::none();
@@ -72,13 +75,11 @@ impl<K, V, N> Map<K, V, N> {
                 previous_index = Option::none();
                 next_index = Option::some(i);
                 insert_at_start = true;
-            }
-            else if entry.next.is_none() & (self.big_index == i) & (entry.key < key) & !self.is_empty {
+            } else if entry.next.is_none() & (self.big_index == i) & (entry.key < key) & !self.is_empty {
                 next_index = Option::none();
                 previous_index = Option::some(i);
                 insert_at_end = true;
-            }
-            else if (entry.key < key)
+            } else if (entry.key < key)
                 & entry.previous.is_some()
                 & entry.next.is_some()
                 & !(self.small_index == i) {
@@ -88,8 +89,7 @@ impl<K, V, N> Map<K, V, N> {
                     next_index = Option::some(entry.next.unwrap());
                     insert_between_two_entries = true;
                 }
-            }
-            else if (entry.key < key)
+            } else if (entry.key < key)
                 & entry.previous.is_none()
                 & entry.next.is_some()
                 & (self.small_index == i) {
@@ -141,25 +141,21 @@ impl<K, V, N> Map<K, V, N> {
         if self.is_empty {
             self.small_index = self.size;
             self.big_index = self.size;
-        }
-        else if found_collision {
+        } else if found_collision {
             let collided_entry = self.entries[found_index];
             let found_key = collided_entry.key;
             assert_eq(found_key, key);
             old_value = Option::some(collided_entry.value);
             self.entries[found_index].value = value;
-        }
-        else if previous_index.is_none() {
+        } else if previous_index.is_none() {
             self.entries[next_index.unwrap_unchecked()].previous = Option::some(self.size);
             new_entry.next = next_index;
             self.small_index = self.size;
-        }
-        else if next_index.is_none() {
+        } else if next_index.is_none() {
             self.entries[previous_index.unwrap_unchecked()].next = Option::some(self.size);
             new_entry.previous = previous_index;
             self.big_index = self.size;
-        }
-        else {
+        } else {
             new_entry.previous = previous_index;
             new_entry.next = next_index;
             self.entries[previous_index.unwrap_unchecked()].next = Option::some(self.size);
@@ -192,21 +188,18 @@ impl<K, V, N> Map<K, V, N> {
         if found_entry.next.is_none() & found_entry.previous.is_none() {
             self.entries[found_index] = Item::default();
             self.is_empty = true;
-        }
-        else if found_index == self.small_index {
+        } else if found_index == self.small_index {
             let next = self.entries[self.small_index].next;
             self.entries[self.entries[self.small_index].next.unwrap()].previous = Option::none();
             self.entries[self.small_index] = Item::default();
             self.small_index = next.unwrap();
-        }
-        else if found_index == self.big_index {
+        } else if found_index == self.big_index {
             let entry = self.entries[self.big_index];
             let previous = entry.previous.unwrap();
             self.entries[previous].next = Option::none();
             self.entries[self.big_index] = Item::default();
             self.big_index = previous;
-        }
-        else {
+        } else {
             let previous_index = self.entries[found_index].previous;
             let next_index = self.entries[found_index].next;
             self.entries[previous_index.unwrap()].next = self.entries[found_index].next;
@@ -290,15 +283,13 @@ impl<K, V, N> Map<K, V, N> {
 
     // returns an array of keys in the map
     pub fn keys(self) -> BoundedVec<K, N>
-    where K: Eq + Default
-    {
+    where K: Eq + Default {
         // TODO: Make this constrained
         self.get_keys()
     }
 
     unconstrained fn get_keys(self) -> BoundedVec<K, N>
-    where K: Eq + Default
-    {
+    where K: Eq + Default {
         let mut keys = BoundedVec::new();
 
         for i in 0..N {
@@ -316,15 +307,13 @@ impl<K, V, N> Map<K, V, N> {
     }
 
     pub fn values(self) -> BoundedVec<V, N>
-    where V: Default
-    {
+    where V: Default {
         // TODO: Make this constrained
         self.get_values()
     }
 
     unconstrained fn get_values(self) -> BoundedVec<V, N>
-    where V: Default
-    {
+    where V: Default {
         let mut values = BoundedVec::new();
 
         for i in 0..N {
@@ -340,11 +329,9 @@ impl<K, V, N> Map<K, V, N> {
 
         values
     }
-
     /*pub fn clear(&mut self) {
         Map::default()
     }*/
-
 }
 
 impl<K, V, N> Default for Map<K, V, N> where K: Default, V: Default {
